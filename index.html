@@ -66,9 +66,9 @@ table.files th,table.files td{border-bottom:1px solid var(--bd);padding:5px 6px;
 @page{size:A4;margin:16mm}
 </style></head><body>
 <header><h1>India Post Chargesheet Drafter — Case Manager</h1>
-<div class="instbar" id="instbar" style="display:none">
+<div class="instbar" id="instbar" style="display:flex">
   <button class="primary" id="btnInstall">Install this app</button>
-  <span class="hint" id="instWhy">Install it once and it opens like any other app, with its own window and icon.</span>
+  <span class="hint" id="instWhy">Install it once and it opens like any other app, with its own window and icon. If Chrome is not offering it, press the button and it will say why.</span>
 </div>
 <div class="sub">O/o Inspector of Posts, Bairia Sub Division &nbsp;|&nbsp; drafts, workspaces and case files — the Disciplinary Authority vets, signs and issues</div></header>
 <div class="wrap">
@@ -2006,7 +2006,8 @@ document.addEventListener("input",()=>{ clearTimeout(t0); t0=setTimeout(()=>{ tr
 let deferredInstall=null;
 window.addEventListener("beforeinstallprompt",function(e){
   e.preventDefault(); deferredInstall=e;
-  const b=$("instbar"); if(b) b.style.display="block";
+  const b=$("instbar"); if(b) b.style.display="flex";
+  const t=$("instWhy"); if(t) t.textContent="Chrome is ready — press Install and it is added like any other app.";
 });
 window.addEventListener("appinstalled",function(){
   const b=$("instbar"); if(b) b.style.display="none";
@@ -2022,11 +2023,39 @@ if("serviceWorker" in navigator){
     }).catch(function(){ /* served without the extra files — the app still works */ });
   });
 }
-document.addEventListener("click",function(e){
+/* tells you exactly what the browser sees, so an install that will not appear can be diagnosed */
+async function installCheck(){
+  const out=[];
+  const ml=document.querySelector('link[rel=manifest]');
+  out.push("1. Manifest link in this page: "+(ml? ml.getAttribute("href") : "NOT FOUND \u2014 the browser is showing an older copy; hard-reload with Ctrl+Shift+R"));
+  if(ml){
+    try{ const r=await fetch(ml.getAttribute("href"),{cache:"no-store"});
+      if(r.ok){ const j=await r.json();
+        out.push("2. Manifest loads: name \""+(j.name||"")+"\", display \""+(j.display||"")+"\", "+(j.icons||[]).length+" icons"); }
+      else out.push("2. Manifest could not be loaded: HTTP "+r.status);
+    }catch(err){ out.push("2. Manifest could not be loaded: "+err.message); }
+  }
+  if("serviceWorker" in navigator){
+    try{ const reg=await navigator.serviceWorker.getRegistration();
+      out.push("3. Service worker: "+(reg? (reg.active? "active" : "registered, still starting") : "not registered"));
+      out.push("4. This page is under its control: "+(navigator.serviceWorker.controller? "yes" : "no \u2014 reload the page once"));
+    }catch(err){ out.push("3. Service worker check failed: "+err.message); }
+  } else out.push("3. Service worker: not supported by this browser");
+  out.push("5. Already running as an installed app: "+(((window.matchMedia&&window.matchMedia("(display-mode: standalone)").matches)||window.navigator.standalone)? "yes" : "no"));
+  out.push("6. Chrome is offering its own install prompt: "+(deferredInstall? "yes \u2014 press Install" : "not yet"));
+  return out.join("\n");
+}
+document.addEventListener("click",async function(e){
   if(!e.target.closest("#btnInstall")) return;
   const b=$("instbar");
-  if(deferredInstall){ deferredInstall.prompt(); deferredInstall.userChoice.then(function(){ deferredInstall=null; if(b) b.style.display="none"; }); }
-  else alert("Chrome is not offering the install prompt here. Use the Chrome menu (\u22ee) at the top right, then Cast, save and share \u2192 Install page as app. On a phone, use the menu \u2192 Add to Home screen. The app is also already usable offline once opened.");
+  if(deferredInstall){
+    deferredInstall.prompt();
+    try{ await deferredInstall.userChoice; }catch(err){}
+    deferredInstall=null; if(b) b.style.display="none";
+    return;
+  }
+  const report=await installCheck();
+  alert(report+"\n\nIf Chrome is not offering the prompt, its own route is:\n\u22ee menu (top right) \u2192 Cast, save and share \u2192 Install page as app.\n\nIf even that is absent, use \u22ee menu \u2192 More tools \u2192 Create shortcut, and tick \"Open as window\" \u2014 that route always works, and gives you the same window and icon.\n\nOn a phone: \u22ee menu \u2192 Add to Home screen.");
 });
 
 /* init — the case is ready at once; IndexedDB comes up alongside */
