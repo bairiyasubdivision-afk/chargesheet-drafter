@@ -605,7 +605,7 @@ function rec(){ const a=ART(); return (a&&MIS.find(m=>m.id===a.mid))||MIS[0]; }
 
 /* ================= helpers used by the reused blocks ================= */
 const AUTH_DEFAULT="Inspector of Posts, Bairia Sub Division";
-const LH_DEF=["भारतीय डाक विभाग","Department of Posts, India","कार्यालय, निरीक्षक डाकघर, पूर्वी उप मण्डल, बैरिया, बलिया – 277201","O/o Inspector of Posts, East Sub Dn. Bairia, Ballia – 277201","(बलिया डाक मण्डल | Ballia Postal Division)"];
+const LH_DEF=["भारतीय डाक विभाग","Department of Posts, India","कार्यालय, निरीक्षक डाकघर, पूर्वी उप मण्डल, बैरिया – 277201","O/o Inspector of Posts, East Sub Dn. Bairia – 277201","अधीक्षक डाकघर, बलिया – 277001 | O/o Superintendent of Post Offices, Ballia – 277001"];
 let ST={pop:"GDS",track:"",inquiry:false,lang:"hi",gender:"male",tpl:"T1",interim:"none"};
 function val(id){ const e=$(id); return e? (e.value||"").trim() : ""; }
 function fmt(d){ if(!d) return "________"; const p=d.split("-"); return p.length===3? p[2]+"."+p[1]+"."+p[0] : d; }
