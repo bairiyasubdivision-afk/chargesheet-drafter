@@ -293,6 +293,13 @@ table.files th,table.files td{border-bottom:1px solid var(--bd);padding:5px 6px;
       <div><label>Sitting place</label><input id="sitPlace" value="Bairia"></div>
       <div><label>&nbsp;</label><div class="btns"><button id="btnSteps">Steps and checklists</button></div></div>
     </div>
+    <div class="row3">
+      <div><label>Kind of witness (for the summons)</label><select id="witType">
+        <option value="govt">Government servant — a departmental official</option>
+        <option value="private">Private individual — not a Government servant</option></select></div>
+      <div><label>Office of the witness (for the copy endorsement)</label><input id="witOffice" placeholder="used only for a Government servant witness"></div>
+      <div><label>&nbsp;</label><div class="hint" style="margin:0">A departmental official is requisitioned through his office, which must spare him; a private individual is only requested to attend and may claim his travelling expenses.</div></div>
+    </div>
     <div class="hint" id="npw" style="display:none;color:#b00">This entry is not a penalty (G-30). A charge sheet is not issued for it, so generation is disabled.</div>
   </div>
 </div>
@@ -1024,7 +1031,7 @@ function pullCase(){
   c.auth.desig=val("authDesig"); c.auth.name=val("authName"); c.auth.memoNo=val("memoNo"); c.auth.fileNo=val("fileNo"); c.emp.nameHi=val("empNameHi"); c.emp.postingHi=val("postingHi"); c.auth.issueDate=val("issueDate");
   c.auth.place=val("place"); c.auth.wsd=val("wsd"); c.auth.engAuth=val("engAuth");
   c.lh=[val("l0"),val("l1"),val("l2"),val("l3"),val("l4")]; c.lang=ST.lang; c.interim=val("interim");
-  c.ioName=val("ioName"); c.poName=val("poName"); c.witName=val("witName"); c.sitDate=val("sitDate"); c.sitPlace=val("sitPlace"); c.effFrom=val("effFrom");
+  c.ioName=val("ioName"); c.poName=val("poName"); c.witName=val("witName"); c.witType=val("witType"); c.witOffice=val("witOffice"); c.sitDate=val("sitDate"); c.sitPlace=val("sitPlace"); c.effFrom=val("effFrom");
   c.ioOrderNo=val("ioOrderNo"); c.ioOrderDate=val("ioOrderDate"); c.ioOrderAuth=val("ioOrderAuth");
   c.poOrderNo=val("poOrderNo"); c.poOrderDate=val("poOrderDate"); c.poOrderAuth=val("poOrderAuth");
   touch();
@@ -1039,7 +1046,7 @@ function pushCase(){
   $("authDesig").value=c.auth.desig||AUTH_DEFAULT; $("authName").value=c.auth.name||""; $("memoNo").value=c.auth.memoNo||""; $("fileNo").value=c.auth.fileNo||""; $("empNameHi").value=c.emp.nameHi||""; $("postingHi").value=c.emp.postingHi||"";
   $("issueDate").value=c.auth.issueDate||""; $("place").value=c.auth.place||"Bairia"; $("wsd").value=c.auth.wsd||"10"; $("engAuth").value=c.auth.engAuth||"";
   (c.lh||LH_DEF).forEach((v,i)=>{ const e=$("l"+i); if(e) e.value=v; });
-  $("interim").value=c.interim||"none"; $("ioName").value=c.ioName||""; $("poName").value=c.poName||""; $("witName").value=c.witName||"";
+  $("interim").value=c.interim||"none"; $("ioName").value=c.ioName||""; $("poName").value=c.poName||""; $("witName").value=c.witName||""; $("witType").value=c.witType||"govt"; $("witOffice").value=c.witOffice||"";
   $("sitDate").value=c.sitDate||""; $("sitPlace").value=c.sitPlace||"Bairia"; $("effFrom").value=c.effFrom||"";
   $("ioOrderNo").value=c.ioOrderNo||""; $("ioOrderDate").value=c.ioOrderDate||""; $("ioOrderAuth").value=c.ioOrderAuth||"";
   $("poOrderNo").value=c.poOrderNo||""; $("poOrderDate").value=c.poOrderDate||""; $("poOrderAuth").value=c.poOrderAuth||"";
@@ -1702,19 +1709,35 @@ function buildSummons(){
   const lang=ST.lang, nm=val("empName")||"________________", sal=salHI(), salE=salFullEN();
   const io=val("ioName")||"________________", wit=val("witName")||"________________";
   const dt=fmt(val("sitDate")), pl=val("sitPlace")||"Bairia", tm="________";
+  const govt=(val("witType")||"govt")==="govt";          /* public servant, or private individual */
+  const woff=val("witOffice")||(lang==="hi"?"संबंधित कार्यालय":"the concerned office");
   const p=[LH(),""];
   if(lang==="hi"){
-    p.push("सेवा में,", wit, "","महोदय,","");
+    p.push("सेवा में,", wit, "", govt?"महोदय,":"महोदय / महोदया,","");
     p.push("मैं, "+sal+" "+nm+" के विरुद्ध चल रही विभागीय जाँच कार्यवाही में जाँच प्राधिकारी हूँ।","");
-    p.push("आपका साक्ष्य इस मामले में महत्वपूर्ण माना गया है। अतः आपसे अनुरोध है कि आप दिनांक "+dt+" को समय "+tm+" बजे, स्थान "+pl+" पर मेरे समक्ष उपस्थित होने का कष्ट करें।","");
-    p.push("यह संभव है / संभव नहीं है कि आपको उस स्थान पर एक दिन से अधिक रुकना पड़े।");
-    p.push("","भवदीय,","","(जाँच अधिकारी)", io, "","प्रतिलिपि: संबंधित कार्यालय को, उपरोक्त अधिकारी को उक्त तिथियों में उपस्थित होने की अनुमति देने के अनुरोध के साथ।");
+    if(govt){
+      p.push("अपने शासकीय कर्तव्य के निर्वहन में आपसे अपेक्षा है कि आप दिनांक "+dt+" को समय "+tm+" बजे, स्थान "+pl+" पर साक्षी के रूप में मेरे समक्ष उपस्थित हों।","");
+      p.push("यह संभव है / संभव नहीं है कि आपको उस स्थान पर एक दिन से अधिक रुकना पड़े।");
+      p.push("","भवदीय,","","(जाँच अधिकारी)", io,"");
+      p.push("प्रतिलिपि: "+woff+" को, उपरोक्त अधिकारी को उक्त तिथियों में जाँच में उपस्थित होने की अनुमति देने तथा उन दिनों की उनकी अनुपस्थिति को ड्यूटी पर मानने के अनुरोध के साथ।");
+    } else {
+      p.push("इस मामले में आपका साक्ष्य महत्वपूर्ण माना गया है। अतः आपसे अनुरोध है कि आप दिनांक "+dt+" को समय "+tm+" बजे, स्थान "+pl+" पर मेरे समक्ष उपस्थित होने का कष्ट करें।","");
+      p.push("यह संभव है / संभव नहीं है कि आपको उस स्थान पर एक दिन से अधिक रुकना पड़े। जाँच में उपस्थित होने पर आपके वास्तविक यात्रा व्यय नियमानुसार देय दरों पर, आवश्यक प्रमाण-पत्र प्रस्तुत करने पर संदाय किए जा सकते हैं।");
+      p.push("","भवदीय,","","(जाँच अधिकारी)", io);
+    }
   } else {
-    p.push("To", wit, "","Sir,","");
-    p.push("I am the Inquiring Authority in the proceedings against "+salE+" "+nm+".","");
-    p.push("Your evidence is considered material. I request you to appear before me on "+dt+" at "+tm+" (time and place: "+pl+").","");
-    p.push("You are / are not likely to be required to stay at the place for more than a day.");
-    p.push("","Yours faithfully,","","(Inquiring Officer)", io, "","Copy to the concerned office, with the request to permit the official mentioned above to attend the inquiry on these dates.");
+    p.push("To", wit, "", govt?"Sir,":"Sir / Madam,","");
+    p.push("I am the Inquiring Authority in the departmental proceedings against "+salE+" "+nm+".","");
+    if(govt){
+      p.push("In the discharge of your official duty, you are required to appear before me on "+dt+" at "+tm+" at "+pl+", as a witness in the said proceedings.","");
+      p.push("You are / are not likely to be required to stay at the place for more than a day.");
+      p.push("","Yours faithfully,","","(Inquiring Officer)", io,"");
+      p.push("Copy to "+woff+", with the request to permit the official mentioned above to attend the inquiry on these dates, and to treat his absence from office on those days as on duty.");
+    } else {
+      p.push("Your evidence is considered material to the inquiry. I request you to appear before me on "+dt+" at "+tm+" at "+pl+".","");
+      p.push("You are / are not likely to be required to stay at the place for more than a day. Travelling and other expenses actually incurred by you in attending the inquiry may be paid at the admissible rates, on production of the necessary certificate.");
+      p.push("","Yours faithfully,","","(Inquiring Officer)", io);
+    }
   }
   return p.join("\n");
 }
