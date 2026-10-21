@@ -64,6 +64,16 @@ table.files th,table.files td{border-bottom:1px solid var(--bd);padding:5px 6px;
 .crow .mt{font-size:11.5px;color:var(--mu)}
 @media print{header,.tabs,.card.noprint,.btns,.pgbreak,.docbar{display:none!important}#paper{border:0;padding:0;font-size:12pt}}
 @page{size:A4;margin:16mm}
+@media(max-width:700px){
+  .row,.row3{grid-template-columns:1fr}
+  #rolebar{margin-left:0!important;flex:1 1 100%;justify-content:flex-start;padding-top:4px}
+  #roleSel{max-width:100%}
+  .wrap{padding:8px}
+  .card{padding:11px 12px}
+  .tab{padding:7px 11px;font-size:12.5px}
+  table.files{display:block;overflow-x:auto;white-space:nowrap}
+  h1{font-size:17px}
+}
 </style></head><body>
 <header><h1>India Post Chargesheet Drafter — Case Manager</h1>
 <div class="instbar" id="instbar" style="display:flex">
@@ -90,6 +100,16 @@ table.files th,table.files td{border-bottom:1px solid var(--bd);padding:5px 6px;
 </div>
 
 <div class="pane on" id="pane-cases">
+  <div class="card">
+    <h2>How to use this</h2>
+    <ol style="margin:0;padding-left:20px;font-size:13px;line-height:1.75">
+      <li>Press <b>New case</b> and say in what capacity you hold it — Disciplinary Authority, Inquiring Authority, or Presenting Officer.</li>
+      <li>On the <b>Charge sheet</b> tab set the cadre, the misconduct, the dates and the amount, and add an article for each charge.</li>
+      <li>Attach the papers you already have; for pages you have photographed, use <b>Photographs of a document</b> to make them one PDF.</li>
+      <li>Go to the <b>Draft</b> card, fill the fields there, then press the button for the paper you want — and <b>Download .docx</b> or <b>Print</b>.</li>
+      <li>The <b>Formats</b> tab holds the prescribed forms, and <b>Reference</b> the stages, checklists and folder plan.</li>
+    </ol>
+  </div>
   <div class="card" id="regCard" style="display:none">
     <h2>Register a new case</h2>
     <label>In what capacity are you handling this case?</label>
@@ -270,19 +290,7 @@ table.files th,table.files td{border-bottom:1px solid var(--bd);padding:5px 6px;
 
   <div class="card noprint">
     <h2>4. Draft</h2>
-    <div class="btns">
-      <button class="primary" id="btnGen">Generate charge sheet</button>
-      <button id="btnIO">Inquiring Authority / Inquiry Officer order</button>
-      <button id="btnPO">Presenting Officer order</button>
-      <button id="btnSummons">Summons to a witness</button>
-      <button id="btnCert">Certificate</button>
-      <button id="btnSheet">Daily order sheet</button>
-      <button id="btnExparte">Ex parte order</button>
-      <button id="btnDisagree">Disagreement note</button>
-      <button id="btnPrint">Print</button>
-      <button id="btnDocx">Download .docx</button>
-      <button class="ghost" id="btnCopy">Copy text</button>
-    </div>
+    <div class="hint">Fill the fields below first — they belong to the document — then press the button for the paper you want.</div>
     <div class="row3">
       <div><label>Inquiring Authority / Inquiry Officer</label><input id="ioName"></div>
       <div><label>Presenting Officer</label><input id="poName"></div>
@@ -306,6 +314,25 @@ table.files th,table.files td{border-bottom:1px solid var(--bd);padding:5px 6px;
           <input type="checkbox" id="lhOn" checked style="width:auto;margin:0"> Print the office letterhead on this document</label></div>
       <div><label>&nbsp;</label><div class="hint" style="margin:0">It is printed on the charge sheet, the suspension order, the put off duty order and the appointment orders, and left off a summons, a daily order sheet, an inquiry report or a PO brief, which usually go on plain paper. Change the tick before generating.</div></div>
       <div><label>&nbsp;</label><div class="hint" style="margin:0"></div></div>
+    </div>
+    <div class="btns">
+      <button class="primary" id="btnGen">Generate charge sheet</button>
+      <button id="btnIO">Inquiring Authority / Inquiry Officer order</button>
+      <button id="btnPO">Presenting Officer order</button>
+      <button id="btnSummons">Summons to a witness</button>
+      <button id="btnCert">Certificate</button>
+      <button id="btnSheet">Daily order sheet</button>
+      <button id="btnExparte">Ex parte order</button>
+      <button id="btnDisagree">Disagreement note</button>
+      <button id="btnPrint">Print</button>
+      <button id="btnDocx">Download .docx</button>
+      <button class="ghost" id="btnCopy">Copy text</button>
+    </div>
+    <div class="row3" id="extraRow" style="display:none">
+      <div id="cell_xScheme"><label>Scheme / account type</label><input id="xScheme" placeholder="e.g. Savings Bank"></div>
+      <div id="cell_xRecord"><label>Record / register</label><input id="xRecord" placeholder="e.g. the B.O. journal"></div>
+      <div id="cell_xFacts"><label>Particulars</label><input id="xFacts" placeholder="the fact this article turns on"></div>
+      <div id="cell_xMedium"><label>Medium</label><input id="xMedium" placeholder="e.g. by registered post"></div>
     </div>
     <div class="hint" id="npw" style="display:none;color:#b00">This entry is not a penalty (G-30). A charge sheet is not issued for it, so generation is disabled.</div>
   </div>
@@ -627,7 +654,8 @@ function fillArt(t,a,lang){
   const map={ "[name]":e.name||"________________", "[designation]":a.aDesig||e.desig||e.cadre||"________________",
     "[office]":a.aPosting||e.posting||"________________", "[from]":fmt(a.from), "[to]":fmt(a.to), "[date]":fmt(a.date),
     "[amount]":a.amount||"________", "[party]":a.party||"________________", "[reference]":a.ref||"________",
-    "[number]":a.ref||"________", "[record]":"________________", "[scheme]":"________________", "[medium]":"________________", "[facts]":"________________" };
+    "[number]":a.ref||"________", "[record]":a.xRecord||"________________", "[scheme]":a.xScheme||"________________",
+    "[medium]":a.xMedium||"________________", "[facts]":a.xFacts||"________________" };
   let s=g(t||"");
   Object.keys(map).forEach(k=>{ s=s.split(k).join(map[k]); });
   s=s.replace(/\[([a-zA-Z ]+)\]/g,"________").replace(/\{SAL\}/g,sal);
@@ -1022,7 +1050,7 @@ function render(){
   $("pillLang").textContent = ST.lang==="hi"?"हिन्दी":"English";
   $("mnote").textContent = (m.id+" · "+m.track+" · "+(m.note?"Library note (not independently re-checked): "+m.note:""));
   const cw=competence(); $("cmpw").style.display=cw?"block":"none"; $("cmpw").textContent=cw;
-  renderArticles(); renderChk();
+  renderArticles(); renderExtra(); renderChk();
 }
 
 /* ================= article + case wiring ================= */
@@ -1031,6 +1059,17 @@ const CADRES={GDS:["Branch Postmaster (BPM)","Assistant Branch Postmaster (ABPM)
 function fillCadre(){ const s=$("cadre"); s.innerHTML=""; CADRES[ST.pop].forEach(x=>{ const o=document.createElement("option"); o.value=x;o.textContent=x;s.appendChild(o); }); }
 function fillMis(){ const s=$("mid"); s.innerHTML=""; MIS.filter(m=>m.pop===ST.pop).forEach(m=>{ const o=document.createElement("option");
   o.value=m.id; o.textContent=m.id+" — "+(ST.lang==="hi"?m.hi:m.en)+"  ("+m.track+")"; s.appendChild(o); }); }
+/* the four extra placeholders are asked for only by the misconducts that use them */
+const EXTRA=[["xScheme","[scheme]"],["xRecord","[record]"],["xFacts","[facts]"],["xMedium","[medium]"]];
+function renderExtra(){
+  const a=ART(); if(!a) return; const txt=[a.artEn,a.impEn,a.artHi,a.impHi].join(" ");
+  let any=false;
+  EXTRA.forEach(function(e){
+    const cell=$("cell_"+e[0]); if(!cell) return;
+    const need=txt.indexOf(e[1])>=0; cell.style.display=need?"":"none"; if(need) any=true;
+  });
+  const row=$("extraRow"); if(row) row.style.display=any?"":"none";
+}
 function renderArticles(){
   const c=C(); if(!c) return;
   $("artChips").innerHTML = c.articles.map((a,i)=>'<div class="chip art'+(i===artIdx?' on':'')+'" data-art="'+i+'">'+
@@ -1072,6 +1111,7 @@ function pullArt(){
   a.aPosting=val("aPosting"); a.aDesig=val("aDesig");
   a.artHi=val("artHi"); a.artEn=val("artEn"); a.impHi=val("impHi"); a.impEn=val("impEn");
   a.docs=val("docList"); a.wits=val("witList");
+  a.xScheme=val("xScheme"); a.xRecord=val("xRecord"); a.xFacts=val("xFacts"); a.xMedium=val("xMedium");
   a.track=ST.track; a.inquiry=ST.inquiry;
   touch(); renderArticles();
 }
@@ -1082,11 +1122,14 @@ function pushArt(){
   $("aPosting").value=a.aPosting||""; $("aDesig").value=a.aDesig||"";
   $("artHi").value=a.artHi||""; $("artEn").value=a.artEn||""; $("impHi").value=a.impHi||""; $("impEn").value=a.impEn||"";
   $("docList").value=a.docs||""; $("witList").value=a.wits||"";
+  $("xScheme").value=a.xScheme||""; $("xRecord").value=a.xRecord||""; $("xFacts").value=a.xFacts||""; $("xMedium").value=a.xMedium||"";
   ST.track=a.track||""; ST.inquiry=!!a.inquiry;
   applyMis(true);
 }
 function applyMis(keep){
-  const m=rec(); const tr=(m.track||"").toLowerCase();
+  /* take the misconduct from the dropdown itself: reading it from the stored article made the
+     text one step behind, so choosing a different misconduct filled in the previous one */
+  const m=(MIS.find(function(x){ return x.id===val("mid"); }))||rec(); const tr=(m.track||"").toLowerCase();
   const minorOnly=tr==="minor", majorOnly=tr==="major", isNP=tr.indexOf("not a penalty")>=0;
   $("npw").style.display=isNP?"block":"none"; $("btnGen").disabled=isNP;
   if(minorOnly) ST.track="minor"; else if(majorOnly) ST.track="major"; else if(ST.track!=="minor"&&ST.track!=="major") ST.track="minor";
@@ -2169,7 +2212,7 @@ const HI_GLOSS=[["o/o superintendent of post offices, ballia", "अधीक्�
  ["inspector of posts, bairia", "निरीक्षक डाकघर, बैरिया"],
  ["bairia", "बैरिया"], ["ballia", "बलिया"],
  ["investigating official", "जाँच करने वाला अधिकारी"], ["witnesses", "गवाह"], ["inspecting official", "निरीक्षण अधिकारी"], ["complainant", "शिकायतकर्ता"], ["reporting official", "रिपोर्ट करने वाला अधिकारी"], ["account office official", "लेखा कार्यालय का अधिकारी"], ["depositor", "जमाकर्ता"], ["addressee statement", "प्रेषिती का बयान"], ["addressee", "प्रेषिती"], ["inspection", "निरीक्षण"], ["complaint", "शिकायत"], ["complaints", "शिकायतें"], ["statements", "बयान"], ["statement", "बयान"], ["as per facts", "तथ्यों के अनुसार"], ["payee statement", "भुगतान-प्राप्तकर्ता का बयान"], ["payee", "भुगतान-प्राप्तकर्ता"], ["verifying official", "सत्यापन अधिकारी"], ["delivery slips", "वितरण पर्चियाँ"], ["delivery slip", "वितरण पर्ची"], ["vouchers", "वाउचर"], ["bo journal", "शाखा डाकघर जर्नल"], ["bo daily account", "शाखा डाकघर दैनिक लेखा"], ["account-office records", "लेखा कार्यालय के अभिलेख"], ["premium register", "प्रीमियम रजिस्टर"], ["policy records", "पॉलिसी अभिलेख"], ["policy holder", "पॉलिसीधारक"], ["ledgers", "खाता-बही"], ["b.o. slip", "शाखा डाकघर पर्ची"], ["emo voucher", "eMO वाउचर"], ["cash book", "रोकड़ बही"], ["inspection report", "निरीक्षण रिपोर्ट"], ["stock official", "भंडार अधिकारी"], ["inspection notes", "निरीक्षण टिप्पणियाँ"], ["sender", "प्रेषक"], ["beat list", "बीट सूची"], ["article condition report", "डाक वस्तु की स्थिति रिपोर्ट"], ["records produced", "प्रस्तुत अभिलेख"], ["attendance register", "उपस्थिति रजिस्टर"], ["leave records", "छुट्टी अभिलेख"], ["attendance", "उपस्थिति"], ["reports", "रिपोर्टें"], ["report", "रिपोर्ट"], ["witness", "गवाह"], ["complaints committee proceedings", "शिकायत समिति की कार्यवाही"], ["complaints committee members", "शिकायत समिति के सदस्य"], ["evidence of disclosure", "प्रकटीकरण का साक्ष्य"], ["evidence of activity", "गतिविधि का साक्ष्य"], ["sbco official", "SBCO अधिकारी"], ["sbco objections", "SBCO आपत्तियाँ"], ["property returns", "संपत्ति विवरणी"], ["vigilance enquiry", "सतर्कता जाँच"], ["vigilance official", "सतर्कता अधिकारी"], ["passbooks", "पासबुक"], ["passbook", "पासबुक"], ["deposit receipt ms-87(a)", "जमा रसीद MS-87(a)"], ["spm/account office official", "उप डाकपाल/लेखा कार्यालय का अधिकारी"], ["ms-87(a) receipt book", "MS-87(a) रसीद पुस्तिका"], ["account-opening forms", "खाता-खोलने के फॉर्म"], ["ao records", "लेखा कार्यालय अभिलेख"], ["remittance schedules", "प्रेषण अनुसूचियाँ"], ["withdrawal warrant", "निकासी वारंट"], ["specimen signature/thumb impression", "नमूना हस्ताक्षर/अंगूठे का निशान"], ["depositor statement", "जमाकर्ता का बयान"], ["handwriting expert if required", "आवश्यकतानुसार हस्तलेख विशेषज्ञ"], ["altered records", "परिवर्तित अभिलेख"], ["office copies", "कार्यालय प्रतियाँ"], ["administrative/forensic examination report", "प्रशासनिक/फोरेंसिक परीक्षण रिपोर्ट"], ["cash-bag weight records", "नकद-थैला वजन अभिलेख"], ["treasury book", "कोषागार बही"], ["account-office slips", "लेखा कार्यालय पर्चियाँ"], ["treasurer", "कोषाध्यक्ष"], ["ms-27 book", "MS-27 पुस्तक"], ["witness to payment", "भुगतान का गवाह"], ["delivery records", "वितरण अभिलेख"], ["remittance returns", "प्रेषण विवरणियाँ"], ["ippb transaction logs", "IPPB लेन-देन लॉग"], ["beneficiary statements", "लाभार्थी के बयान"], ["scheme records", "योजना अभिलेख"], ["beneficiary", "लाभार्थी"], ["ippb official", "IPPB अधिकारी"], ["cash verification report", "नकद सत्यापन रिपोर्ट"], ["stock book sk-1", "स्टॉक बही SK-1"], ["invoice/indent", "चालान/माँगपत्र"], ["investigation report", "जाँच रिपोर्ट"], ["loss statement", "हानि विवरण"], ["assessment of responsibility (gfr app. i)", "उत्तरदायित्व का निर्धारण (GFR परिशिष्ट-I)"], ["cash balance reports", "नकद शेष रिपोर्ट"], ["registered/parcel lists", "पंजीकृत/पार्सल सूचियाँ"], ["visit-book entries", "विज़िट बुक प्रविष्टियाँ"], ["visit book", "विज़िट बुक"], ["delivery efficiency data", "वितरण दक्षता आँकड़े"], ["gds md/dak sevak", "GDS MD/डाक सेवक"], ["inspection/visit report", "निरीक्षण/विज़िट रिपोर्ट"], ["public complaints", "जन-शिकायतें"], ["hours-of-business notice", "कार्य-समय सूचना"], ["receipt book", "रसीद पुस्तिका"], ["journal", "जर्नल"], ["inspection objections", "निरीक्षण आपत्तियाँ"], ["error book", "त्रुटि पुस्तिका"], ["absentee statement", "अनुपस्थिति विवरण"], ["controlling official", "नियंत्रक अधिकारी"], ["residence declaration", "निवास घोषणा"], ["field verification report", "क्षेत्रीय सत्यापन रिपोर्ट"], ["field verification", "क्षेत्रीय सत्यापन"], ["village witnesses", "ग्राम गवाह"], ["witness statements", "गवाहों के बयान"], ["correspondence", "पत्राचार"], ["representation on the official's behalf", "अधिकारी की ओर से प्रतिवेदन"], ["recipient official", "प्राप्तकर्ता अधिकारी"], ["evidence of political activity", "राजनीतिक गतिविधि का साक्ष्य"], ["evidence of the statement or publication", "कथन अथवा प्रकाशन का साक्ष्य"], ["evidence given", "दिया गया साक्ष्य"], ["sanction record", "स्वीकृति अभिलेख"], ["legal proceedings", "विधिक कार्यवाही"], ["report of debts", "ऋण की रिपोर्ट"], ["finacle/cbs ledgers", "Finacle/CBS खाता-बही"], ["manual", "मैनुअल"], ["inspector of posts", "निरीक्षक डाकघर"], ["superintendent of post offices", "अधीक्षक डाकघर"], ["bairia sub division", "बैरिया उप मंडल"], ["ballia division", "बलिया मंडल"]].concat(Object.entries(HI_CAD).map(x=>[x[0].toLowerCase(),x[1]])).sort((a,b)=>b[0].length-a[0].length);
-const HI_ALLOW=new Set("gds bpm abpm mts spm cbs posb pli rpli sb rd mo emo mis td ssa nsc kvp ippb sbco finacle prb ao so bo ho do io po co id ex parte om ccs cca dop gfr ms sk utr cpc pa sa md app rs no ii iii iv vi vii viii ix".split(" "));
+const HI_ALLOW=new Set(("gds bpm abpm mts spm cbs posb pli rpli sb rd mo emo mis td ssa nsc kvp ippb sbco finacle prb ao so bo ho do io po co id ex parte om ccs cca dop gfr ms sk utr cpc pa sa md app rs no ii iii iv vi vii viii ix abpm allowance amount and assistant authority bairia ballia bpm cbs checklists daily date defence department deposition designation disagreement division east emo examination facts fhb finacle from fundamental gds general gfr iii india inquiring inspector ippb manual medium memorandum mts name number office officer offices order parte party posb post posts presenting record reference rule sbco scheme sheet spm stages statement sub subsistence superintendent vii viii not for issue").split(" "));
 function escRe(x){return x.replace(/[.*+?^${}()|[\]\\\/]/g,"\\$&");}
 /* The glossary is applied longest phrase first, so "payee statement" is translated before
    "statement" can consume it, and the letterhead marker line is never rewritten. */
