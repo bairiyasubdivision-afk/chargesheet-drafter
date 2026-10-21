@@ -300,6 +300,13 @@ table.files th,table.files td{border-bottom:1px solid var(--bd);padding:5px 6px;
       <div><label>Office of the witness (for the copy endorsement)</label><input id="witOffice" placeholder="e.g. अधीक्षक डाकघर, बलिया — for a Government servant witness"></div>
       <div><label>&nbsp;</label><div class="hint" style="margin:0">A departmental official is requisitioned through his office, which must spare him; a private individual is only requested to attend and may claim his travelling expenses.</div></div>
     </div>
+    <div class="row3">
+      <div><label>Letterhead</label>
+        <label style="font-weight:400;display:flex;align-items:center;gap:6px;padding-top:6px">
+          <input type="checkbox" id="lhOn" checked style="width:auto;margin:0"> Print the office letterhead on this document</label></div>
+      <div><label>&nbsp;</label><div class="hint" style="margin:0">It is printed on the charge sheet, the suspension order, the put off duty order and the appointment orders, and left off a summons, a daily order sheet, an inquiry report or a PO brief, which usually go on plain paper. Change the tick before generating.</div></div>
+      <div><label>&nbsp;</label><div class="hint" style="margin:0"></div></div>
+    </div>
     <div class="hint" id="npw" style="display:none;color:#b00">This entry is not a penalty (G-30). A charge sheet is not issued for it, so generation is disabled.</div>
   </div>
 </div>
@@ -628,7 +635,9 @@ function fillArt(t,a,lang){
 }
 /* the reused blocks call toks() and val(); toks uses the active article */
 function toks(t,lang){ return fillArt(t,ART(),lang); }
-function LH(){ return "@@LH|"+(val("memoNo")||"________")+"|"+fmt(val("issueDate"))+"|"+(val("place")||"Bairia")+"|"+
+/* the letterhead line; left out entirely when the officer has switched it off for this document */
+function LH(){ const cb=$("lhOn"); if(cb && !cb.checked) return "";
+  return "@@LH|"+(val("memoNo")||"________")+"|"+fmt(val("issueDate"))+"|"+(val("place")||"Bairia")+"|"+
   (val("authDesig")||AUTH_DEFAULT)+"|"+(val("authName")||"________")+"|"+ST.lang+"|"+(val("fileNo")||"________"); }
 
 function memoEN(tpl, m, c){
@@ -966,7 +975,7 @@ function renderChk(){
 
 /* ================= rendering ================= */
 function put(txt,name){
-  txt=String(txt).replace(/ \(\)/g,"");
+  txt=String(txt).replace(/ \(\)/g,"").replace(/^(?:[ \t]*\n)+/,"");
   /* Count the unfilled fields.  Every generator falls back to exactly eight or exactly
      sixteen underscores for a value it has not been given; the ruled lines of the order
      sheet and the deposition form are other lengths, so they no longer raise a false
@@ -2174,11 +2183,22 @@ function hiPost(t){ if(typeof t!=="string") return t;
 function hiLeft(t){ const u=[]; (t.replace(/@@LH\|[^\n]*/g,"").match(/[A-Za-z][A-Za-z.'-]{2,}/g)||[]).forEach(w=>{ const k=w.toLowerCase().replace(/[.'-]/g,""); if(!HI_ALLOW.has(k)&&u.indexOf(w)<0) u.push(w); }); return u.slice(0,10); }
 /* A decorator, not a re-assignment of something defined elsewhere: for a Hindi draft it
    temporarily puts the Hindi name and posting in place, runs the generator, and translates. */
-function withHindiDoc(f){ return function(){ if(ST.lang!=="hi") return f.apply(this,arguments);
+/* which documents carry the office letterhead by default */
+const LH_FOR={ buildChargeSheet:true, buildPutoff:true, buildSuspension:true, buildRevoke:true,
+  buildIO:true, buildPO:true, buildExParte:true, buildDisagree:true,
+  buildSummons:false, buildOrderSheet:false, buildPOBrief:false, buildIOReport:false,
+  buildDeposition:false, buildGenExam:false, buildCert:false, buildSteps:false };
+/* a tick or untick made by hand applies to the next document generated, then the default resumes */
+let LH_MANUAL=false;
+document.addEventListener("change",function(e){ if(e.target && e.target.id==="lhOn") LH_MANUAL=true; });
+function withHindiDoc(f){ return function(){
+  if(LH_MANUAL){ LH_MANUAL=false; }
+  else if(f.name && (f.name in LH_FOR)){ const cb=$("lhOn"); if(cb) cb.checked=LH_FOR[f.name]; }
+  if(ST.lang!=="hi") return f.apply(this,arguments);
   const c=C(), sv=[$("empName").value,$("posting").value], so=c?[c.emp.name,c.emp.posting]:null, n=val("empNameHi"), p=val("postingHi");
   if(n){ $("empName").value=n; if(c) c.emp.name=n; } if(p){ $("posting").value=p; if(c) c.emp.posting=p; }
   try{ return hiPost(f.apply(this,arguments)); } finally{ $("empName").value=sv[0]; $("posting").value=sv[1]; if(c){ c.emp.name=so[0]; c.emp.posting=so[1]; } } }; }
-["buildChargeSheet","buildPutoff","buildSuspension","buildRevoke","buildIO","buildPO","buildSummons","buildCert","buildOrderSheet","buildExParte","buildDisagree","buildPOBrief","buildGenExam","buildIOReport","buildDeposition"].forEach(function(n){ if(typeof window[n]==="function") window[n]=withHindiDoc(window[n]); });
+["buildChargeSheet","buildPutoff","buildSuspension","buildRevoke","buildIO","buildPO","buildSummons","buildCert","buildOrderSheet","buildExParte","buildDisagree","buildPOBrief","buildGenExam","buildIOReport","buildDeposition","buildSteps"].forEach(function(n){ if(typeof window[n]==="function") window[n]=withHindiDoc(window[n]); });
 /* The earlier re-assignment of put() and of competence() has been folded into those
    functions themselves, where the behaviour can be read beside the code it guards. */
 ["btnDocx","btnPrint","btnCopy"].forEach(id=>{ const el=$(id), h=el&&el.onclick; if(h) el.onclick=function(){ if(/^\[DRAFT — NOT FOR ISSUE/.test(LAST||"") && !confirm("This draft still has blanks or English words. Continue as a DRAFT?")) return; return h.apply(this,arguments); }; });
