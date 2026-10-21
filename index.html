@@ -221,7 +221,8 @@ table.files th,table.files td{border-bottom:1px solid var(--bd);padding:5px 6px;
     <div class="hint" id="mnote"></div>
     <div class="row">
       <div><label>Penalty track</label><div class="chips" id="trackChips">
-        <div class="chip sm" data-tr="minor">Minor / लघु</div><div class="chip sm" data-tr="major">Major / दीर्घ</div></div></div>
+        <div class="chip sm" data-tr="minor">Minor / लघु</div><div class="chip sm" data-tr="major">Major / दीर्घ</div>
+        <div class="hint" id="trackNote" style="margin:5px 0 0"></div></div></div>
       <div><label>Inquiry to be held? (minor only)</label><div class="chips" id="inqChips">
         <div class="chip sm on" data-inq="no">No inquiry</div><div class="chip sm" data-inq="yes">Hold inquiry</div></div></div>
     </div>
@@ -1112,7 +1113,7 @@ function pullArt(){
   a.artHi=val("artHi"); a.artEn=val("artEn"); a.impHi=val("impHi"); a.impEn=val("impEn");
   a.docs=val("docList"); a.wits=val("witList");
   a.xScheme=val("xScheme"); a.xRecord=val("xRecord"); a.xFacts=val("xFacts"); a.xMedium=val("xMedium");
-  a.track=ST.track; a.inquiry=ST.inquiry;
+  a.track=ST.track; a.inquiry=ST.inquiry; a.trackManual=!!ST.trackManual;
   touch(); renderArticles();
 }
 function pushArt(){
@@ -1123,7 +1124,7 @@ function pushArt(){
   $("artHi").value=a.artHi||""; $("artEn").value=a.artEn||""; $("impHi").value=a.impHi||""; $("impEn").value=a.impEn||"";
   $("docList").value=a.docs||""; $("witList").value=a.wits||"";
   $("xScheme").value=a.xScheme||""; $("xRecord").value=a.xRecord||""; $("xFacts").value=a.xFacts||""; $("xMedium").value=a.xMedium||"";
-  ST.track=a.track||""; ST.inquiry=!!a.inquiry;
+  ST.track=a.track||""; ST.inquiry=!!a.inquiry; ST.trackManual=!!a.trackManual;
   applyMis(true);
 }
 function applyMis(keep){
@@ -1132,9 +1133,24 @@ function applyMis(keep){
   const m=(MIS.find(function(x){ return x.id===val("mid"); }))||rec(); const tr=(m.track||"").toLowerCase();
   const minorOnly=tr==="minor", majorOnly=tr==="major", isNP=tr.indexOf("not a penalty")>=0;
   $("npw").style.display=isNP?"block":"none"; $("btnGen").disabled=isNP;
-  if(minorOnly) ST.track="minor"; else if(majorOnly) ST.track="major"; else if(ST.track!=="minor"&&ST.track!=="major") ST.track="minor";
+  /* the taxonomy sets the track when the officer has not chosen one himself; once he has, his
+     choice stands and the taxonomy only advises. */
+  if(!ST.trackManual){
+    if(minorOnly) ST.track="minor";
+    else if(majorOnly) ST.track="major";
+    else if(ST.track!=="minor"&&ST.track!=="major") ST.track="minor";
+  }
   document.querySelectorAll("#trackChips .chip").forEach(c=>c.classList.toggle("on",c.dataset.tr===ST.track));
-  $("trackChips").style.opacity=(minorOnly||majorOnly)?".55":"1";
+  $("trackChips").style.opacity="1";
+  (function(){ const tn=$("trackNote"); if(!tn) return;
+    if(isNP){ tn.textContent="This entry is not a penalty, so no track applies."; return; }
+    const nat = minorOnly? "minor" : (majorOnly? "major" : "either");
+    tn.textContent = (nat==="either")
+      ? "The taxonomy allows either track for this misconduct — choose the one you are proceeding under."
+      : (nat===ST.track
+          ? "The taxonomy places this misconduct in the "+nat+" track. You may still choose the other."
+          : "The taxonomy places this misconduct in the "+nat+" track; you have chosen "+ST.track+". The draft follows your choice.");
+  })();
   $("inqChips").style.opacity=(ST.track==="major")?".45":"1";
   document.querySelectorAll("#inqChips .chip").forEach(c=>c.classList.toggle("on",c.dataset.inq===(ST.inquiry?"yes":"no")));
   ST.tpl=(ST.pop==="GDS")?(ST.track==="minor"?(ST.inquiry?"T2":"T1"):"T3"):(ST.track==="minor"?"T4":"T5");
@@ -1150,14 +1166,14 @@ document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{
   document.querySelectorAll(".pane").forEach(p=>p.classList.toggle("on",p.id==="pane-"+t.dataset.tab));
 });
 $("popChips").onclick=e=>{ const c=e.target.closest(".chip"); if(!c) return; pullArt(); ST.pop=c.dataset.pop; ST.track="";
-  document.querySelectorAll("#popChips .chip").forEach(x=>x.classList.toggle("on",x===c)); fillCadre(); fillMis(); applyMis(); pullCase(); };
+  document.querySelectorAll("#popChips .chip").forEach(x=>x.classList.toggle("on",x===c)); fillCadre(); fillMis(); ST.trackManual=false; applyMis(); pullCase(); };
 $("langChips").onclick=e=>{ const c=e.target.closest(".chip"); if(!c) return; ST.lang=c.dataset.lang;
   document.querySelectorAll("#langChips .chip").forEach(x=>x.classList.toggle("on",x===c)); render(); touch(); };
-$("trackChips").onclick=e=>{ const c=e.target.closest(".chip"); if(!c) return; ST.track=c.dataset.tr;
+$("trackChips").onclick=e=>{ const c=e.target.closest(".chip"); if(!c) return; ST.track=c.dataset.tr; ST.trackManual=true;
   document.querySelectorAll("#trackChips .chip").forEach(x=>x.classList.toggle("on",x===c)); applyMis(); pullArt(); };
 $("inqChips").onclick=e=>{ const c=e.target.closest(".chip"); if(!c) return; ST.inquiry=c.dataset.inq==="yes";
   document.querySelectorAll("#inqChips .chip").forEach(x=>x.classList.toggle("on",x===c)); applyMis(); pullArt(); };
-$("mid").onchange=()=>{ applyMis(); pullArt(); };
+$("mid").onchange=()=>{ ST.trackManual=false; applyMis(); pullArt(); };
 $("gender").onchange=()=>{ ST.gender=$("gender").value; render(); };
 $("artChips").onclick=e=>{ const c=e.target.closest(".chip"); if(!c) return; pullArt(); artIdx=parseInt(c.dataset.art,10); pushArt(); };
 $("btnAddArt").onclick=()=>{ const c=C(); pullArt(); c.articles.push(newArticle(ST.pop==="GDS"?"G-01":"D-01")); artIdx=c.articles.length-1; saveDB(); pushArt(); render(); };
