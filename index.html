@@ -963,8 +963,11 @@ const KINDS={chargesheet:"Charge sheet and annexures",ordersheet:"Daily order sh
  "da-order":"Disciplinary Authority order","service-proof":"Proof of service"};
 function renderChk(){
   const c=C(); const kinds=c.files.map(f=>f.kind);
-  const poNeed=["assignment-po","chargesheet","ordersheet","deposition-state","defence-statement","additional","pobrief"];
-  const ioNeed=["assignment-io","chargesheet","ordersheet","pobrief","defence-statement","deposition-state","deposition-defence","genexam","ioreport"];
+  /* both lists follow the order in which the papers arise, so the checklist reads as the case moves */
+  const poNeed=["assignment-po","chargesheet","ordersheet","deposition-state","additional",
+                "defence-statement","deposition-defence","pobrief"];
+  const ioNeed=["assignment-io","chargesheet","ordersheet","deposition-state","defence-statement",
+                "deposition-defence","genexam","pobrief","ioreport"];
   const mk=(id,need)=>{ $(id).innerHTML=need.map(k=>'<li class="'+(kinds.indexOf(k)>=0?'have':'')+'">'+KINDS[k]+(kinds.indexOf(k)>=0?' — attached':' — pending')+'</li>').join(''); };
   mk('poChk',poNeed); mk('ioChk',ioNeed);
   const rows=c.files.map(f=>'<tr><td>'+esc(KINDS[f.kind]||f.kind)+'</td><td>'+esc(f.name)+(f.stored?'':' <span class="hint">(reference only)</span>')+'</td>'+
