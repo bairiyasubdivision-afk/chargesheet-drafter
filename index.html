@@ -1058,8 +1058,34 @@ function render(){
 const CADRES={GDS:["Branch Postmaster (BPM)","Assistant Branch Postmaster (ABPM)","Dak Sevak"],
   DEPT:["Postal Assistant","Sorting Assistant","Postman","Mail Guard","MTS","Sub Postmaster (SPM)","Counter PA"]};
 function fillCadre(){ const s=$("cadre"); s.innerHTML=""; CADRES[ST.pop].forEach(x=>{ const o=document.createElement("option"); o.value=x;o.textContent=x;s.appendChild(o); }); }
-function fillMis(){ const s=$("mid"); s.innerHTML=""; MIS.filter(m=>m.pop===ST.pop).forEach(m=>{ const o=document.createElement("option");
-  o.value=m.id; o.textContent=m.id+" — "+(ST.lang==="hi"?m.hi:m.en)+"  ("+m.track+")"; s.appendChild(o); }); }
+const MCATS=[
+ ["A","Money and fraud","सरकारी धन और धोखाधड़ी"],
+ ["B","Cash, stamps and stores","नकद, टिकट और भंडार"],
+ ["C","Mail, money orders and delivery","डाक, मनीऑर्डर और वितरण"],
+ ["D","Records, accounts and returns","अभिलेख, लेखा और विवरणी"],
+ ["E","Duty, attendance and absence","ड्यूटी, उपस्थिति और अनुपस्थिति"],
+ ["F","Supervision","पर्यवेक्षण"],
+ ["G","Conduct and discipline","आचरण और अनुशासन"],
+ ["H","Sexual harassment at the workplace","कार्यस्थल पर यौन उत्पीड़न"],
+ ["I","Not a penalty","शास्ति नहीं"]
+];
+const MCAT={"G-01":"A","G-02":"A","G-03":"A","G-04":"A","G-05":"A","G-06":"A","G-07":"A","G-09":"A","D-01":"A","D-02":"A","D-03":"A","D-04":"A","D-05":"A","D-07":"A","D-10":"A","D-11":"A","D-12":"A","D-13":"A","G-10":"B","G-11":"B","G-12":"B","G-13":"B","D-06":"B","D-08":"B","D-09":"B","G-08":"C","G-14":"C","G-15":"C","G-19":"C","D-14":"C","D-15":"C","D-16":"C","D-17":"C","D-19":"C","G-18":"D","G-20":"D","D-18":"D","D-36":"D","D-37":"D","D-38":"D","G-17":"E","G-21":"E","G-23":"E","D-21":"E","D-24":"E","G-16":"F","D-20":"F","D-25":"F","G-22":"G","G-24":"G","G-25":"G","G-26":"G","G-28":"G","G-29":"G","G-31":"G","G-32":"G","G-33":"G","G-34":"G","G-35":"G","G-36":"G","D-22":"G","D-23":"G","D-26":"G","D-28":"G","D-29":"G","D-30":"G","D-31":"G","D-32":"G","D-33":"G","D-34":"G","D-35":"G","G-27":"H","D-27":"H","G-30":"I"};
+function fillMis(){
+  const s=$("mid"); s.innerHTML="";
+  const list=MIS.filter(m=>m.pop===ST.pop);
+  const add=(grp,ms)=>{ ms.forEach(function(m){ const o=document.createElement("option");
+    o.value=m.id; o.textContent=m.id+" — "+(ST.lang==="hi"?m.hi:m.en)+"  ("+m.track+")"; grp.appendChild(o); }); };
+  /* one heading per type, in the order above, so the frauds sit together and the mail cases together */
+  MCATS.forEach(function(cat){
+    const inCat=list.filter(function(m){ return MCAT[m.id]===cat[0]; });
+    if(!inCat.length) return;
+    const g=document.createElement("optgroup"); g.label=(ST.lang==="hi"?cat[2]:cat[1]);
+    add(g,inCat); s.appendChild(g);
+  });
+  /* anything the map does not know still shows, so nothing can go missing */
+  const rest=list.filter(function(m){ return !MCAT[m.id]; });
+  if(rest.length){ const g=document.createElement("optgroup"); g.label=(ST.lang==="hi"?"अन्य":"Other"); add(g,rest); s.appendChild(g); }
+}
 /* the four extra placeholders are asked for only by the misconducts that use them */
 const EXTRA=[["xScheme","[scheme]"],["xRecord","[record]"],["xFacts","[facts]"],["xMedium","[medium]"]];
 function renderExtra(){
