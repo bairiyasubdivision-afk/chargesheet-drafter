@@ -259,7 +259,8 @@ table.files th,table.files td{border-bottom:1px solid var(--bd);padding:5px 6px;
       <div><label>Name of authority</label><input id="authName"></div>
     </div>
     <div class="row3">
-      <div><label>Memo No.</label><input id="memoNo"></div>
+      <div><label>Memo No. — fixed as IP/DISC/designation/name</label><input id="memoNo" readonly style="background:#eef1f6">
+        <div class="hint" style="margin:3px 0 0">Built from the cadre and the official's name; it cannot be typed over.</div></div>
       <div><label>Date of issue</label><input type="date" id="issueDate"></div>
       <div><label>Place of issue</label><input id="place" value="Bairia"></div>
     </div>
@@ -665,8 +666,19 @@ function fillArt(t,a,lang){
 /* the reused blocks call toks() and val(); toks uses the active article */
 function toks(t,lang){ return fillArt(t,ART(),lang); }
 /* the letterhead line; left out entirely when the officer has switched it off for this document */
+/* The memo number is not free text: it is always IP/DISC/<designation>/<name of the charged
+   official>.  The designation is taken from the cadre, shortened to its bracket form where
+   there is one, so a Branch Postmaster gives BPM.  Built at the moment of drafting, so a Hindi
+   draft carries the Hindi name. */
+function MNO(){
+  const cad=(val("cadre")||"").trim(), nm=(val("empName")||"").trim();
+  const m=cad.match(/\(([^)]+)\)/);
+  const desig=((m? m[1] : cad)||"").trim()||"________";
+  return "IP/DISC/"+desig+"/"+(nm||"________");
+}
+function syncMemo(){ const e=$("memoNo"); if(e && e.value!==MNO()) e.value=MNO(); }
 function LH(){ const cb=$("lhOn"); if(cb && !cb.checked) return "";
-  return "@@LH|"+(val("memoNo")||"________")+"|"+fmt(val("issueDate"))+"|"+(val("place")||"Bairia")+"|"+
+  return "@@LH|"+MNO()+"|"+fmt(val("issueDate"))+"|"+(val("place")||"Bairia")+"|"+
   (val("authDesig")||AUTH_DEFAULT)+"|"+(val("authName")||"________")+"|"+ST.lang+"|"+(val("fileNo")||"________"); }
 
 function memoEN(tpl, m, c){
@@ -684,7 +696,7 @@ function memoEN(tpl, m, c){
   ].join("\n");
   if(tpl==="T2") return [
    "MEMORANDUM",
-   "In continuation of Memorandum No. "+(val("memoNo")||"________")+" dated "+fmt(val("issueDate"))+", issued under Rule 10-A of the Gramin Dak Sevak (Conduct and Engagement) Rules, 2020, as amended from time to time, the undersigned is of the opinion that it is necessary to hold an inquiry against "+sal+" "+nm+" under clause 10-E of the said Rules. The substance of the imputation of misconduct or misbehaviour in respect of which the inquiry is proposed to be held is set out in the enclosed statement of articles of charge (Annexure-I). A statement of the imputation of misconduct or misbehaviour in support of each article of charge is enclosed (Annexure-II). A list of documents by which, and a list of witnesses by whom, the articles of charge are proposed to be sustained are also enclosed (Annexures-III and IV).",
+   "In continuation of Memorandum No. "+MNO()+" dated "+fmt(val("issueDate"))+", issued under Rule 10-A of the Gramin Dak Sevak (Conduct and Engagement) Rules, 2020, as amended from time to time, the undersigned is of the opinion that it is necessary to hold an inquiry against "+sal+" "+nm+" under clause 10-E of the said Rules. The substance of the imputation of misconduct or misbehaviour in respect of which the inquiry is proposed to be held is set out in the enclosed statement of articles of charge (Annexure-I). A statement of the imputation of misconduct or misbehaviour in support of each article of charge is enclosed (Annexure-II). A list of documents by which, and a list of witnesses by whom, the articles of charge are proposed to be sustained are also enclosed (Annexures-III and IV).",
    "2. "+sal+" "+nm+" is directed to submit within "+wsd+" days of the receipt of this Memorandum a written statement of "+G("his")+" defence and also to state whether "+G("he")+" desires to be heard in person.",
    "3. "+G("He")+" is informed that an inquiry will be held only in respect of those articles of charge as are not admitted. "+G("He")+" should, therefore, specifically admit or deny each article of charge.",
    "4. "+sal+" "+nm+" is further informed that if "+G("he")+" does not submit "+G("his")+" written statement of defence on or before the date specified in para 2 above, or does not appear in person before the Inquiring Authority or otherwise fails or refuses to comply with the provisions of Rule 10-A read with Rule 10-E of the said Rules, or the orders or directions issued in pursuance thereof, the Inquiring Authority may hold the inquiry against "+G("him")+" ex parte.",
@@ -737,7 +749,7 @@ function memoHI(tpl, m, c){
   ].join("\n");
   if(tpl==="T2") return [
    "ज्ञापन",
-   "ग्रामीण डाक सेवक (आचरण एवं नियोजन) नियमावली, 2020 के नियम 10-A के अंतर्गत जारी ज्ञापन संख्या "+(val("memoNo")||"________")+" दिनांक "+fmt(val("issueDate"))+" के क्रम में, अधोहस्ताक्षरी का मत है कि "+sal+" "+nm+" के विरुद्ध उक्त नियमावली के खंड 10-E के अंतर्गत जाँच कराना आवश्यक है। जिस अनुचित आचरण अथवा दुर्व्यवहार के संबंध में जाँच प्रस्तावित है, उसका सार संलग्न आरोपों के विवरण (अनुलग्नक-I) में दिया गया है। प्रत्येक आरोप के समर्थन में अनुचित आचरण अथवा दुर्व्यवहार का विवरण-पत्र (अनुलग्नक-II) संलग्न है। जिन अभिलेखों द्वारा तथा जिन गवाहों द्वारा आरोपों को सिद्ध किया जाना प्रस्तावित है, उनकी सूचियाँ भी संलग्न हैं (अनुलग्नक-III एवं IV)।",
+   "ग्रामीण डाक सेवक (आचरण एवं नियोजन) नियमावली, 2020 के नियम 10-A के अंतर्गत जारी ज्ञापन संख्या "+MNO()+" दिनांक "+fmt(val("issueDate"))+" के क्रम में, अधोहस्ताक्षरी का मत है कि "+sal+" "+nm+" के विरुद्ध उक्त नियमावली के खंड 10-E के अंतर्गत जाँच कराना आवश्यक है। जिस अनुचित आचरण अथवा दुर्व्यवहार के संबंध में जाँच प्रस्तावित है, उसका सार संलग्न आरोपों के विवरण (अनुलग्नक-I) में दिया गया है। प्रत्येक आरोप के समर्थन में अनुचित आचरण अथवा दुर्व्यवहार का विवरण-पत्र (अनुलग्नक-II) संलग्न है। जिन अभिलेखों द्वारा तथा जिन गवाहों द्वारा आरोपों को सिद्ध किया जाना प्रस्तावित है, उनकी सूचियाँ भी संलग्न हैं (अनुलग्नक-III एवं IV)।",
    "2. "+sal+" "+nm+" को निर्देश दिया जाता है कि इस ज्ञापन की प्राप्ति से "+wsd+" दिनों के भीतर अपना लिखित बचाव-बयान प्रस्तुत करें तथा यह भी बताएं कि वे व्यक्तिगत रूप से सुने जाना चाहते हैं अथवा नहीं।",
    "3. उन्हें सूचित किया जाता है कि जाँच केवल उन्हीं आरोपों के संबंध में की जाएगी जिन्हें स्वीकार नहीं किया गया है। अतः वे प्रत्येक आरोप को स्पष्ट रूप से स्वीकार अथवा नकारें।",
    "4. "+sal+" "+nm+" को यह भी सूचित किया जाता है कि यदि वे ऊपर पैरा 2 में निर्दिष्ट तिथि तक अपना लिखित बचाव-बयान प्रस्तुत नहीं करते, अथवा जाँच अधिकारी के समक्ष व्यक्तिगत रूप से उपस्थित नहीं होते, अथवा अन्यथा उक्त नियमावली के नियम 10-A सहपठित 10-E के प्रावधानों या उसके अधीन जारी आदेशों/निदेशों का पालन करने में असफल रहते हैं या इनकार करते हैं, तो जाँच अधिकारी उनके विरुद्ध एकपक्षीय (ex parte) जाँच कर सकता है।",
@@ -839,7 +851,7 @@ function buildPOBrief(){
   const p=[LH(),""];
   if(lang==="hi"){
     p.push("प्रस्तुतिकरण अधिकारी की लिखित ब्रीफ","");
-    p.push("प्रकरण: "+who+"        प्रकरण संख्या: "+(c.auth.memoNo||"________"),"");
+    p.push("प्रकरण: "+who+"        प्रकरण संख्या: "+MNO(),"");
     p.push("1. प्रस्तावना — यह ब्रीफ "+who+" के विरुद्ध चल रही विभागीय जाँच कार्यवाही में प्रस्तुतिकरण अधिकारी द्वारा प्रस्तुत की जाती है। जाँच अधिकारी: "+(c.ioName||"________")+"; प्रस्तुतिकरण अधिकारी: "+(c.poName||"________")+"।");
     p.push("2. आरोप —"); p.push(arts);
     p.push("3. प्रारंभिक सुनवाई की कार्यवाही — अभिलेखों का निरीक्षण, स्वीकृत एवं विवादित अभिलेख तथा बचाव हेतु माँगे गए अभिलेख एवं गवाह: ________");
@@ -856,7 +868,7 @@ function buildPOBrief(){
     p.push("(प्रस्तुतिकरण अधिकारी)","",(c.poName||"________________"));
   } else {
     p.push("WRITTEN BRIEF OF THE PRESENTING OFFICER","");
-    p.push("Case: "+who+"        Case No.: "+(c.auth.memoNo||"________"),"");
+    p.push("Case: "+who+"        Case No.: "+MNO(),"");
     p.push("1. Introduction — this brief is filed by the Presenting Officer in the departmental inquiry against "+who+". Inquiring Authority: "+(c.ioName||"________")+"; Presenting Officer: "+(c.poName||"________")+".");
     p.push("2. Articles of charge —"); p.push(arts);
     p.push("2A. Appointment — Presenting Officer: "+(c.poName||"________")+" vide order "+(c.poOrderNo||"________")+" dated "+(c.poOrderDate? fmt(c.poOrderDate):"________")+" of "+(c.poOrderAuth||c.auth.desig||"________")+"; Inquiring Authority: "+(c.ioName||"________")+".","");
@@ -917,7 +929,7 @@ function buildIOReport(){
   const p=[LH(),""];
   if(lang==="hi"){
     p.push("जाँच रिपोर्ट (नियम 14(23))","");
-    p.push("प्रकरण: "+who+"        प्रकरण संख्या: "+(c.auth.memoNo||"________"),"");
+    p.push("प्रकरण: "+who+"        प्रकरण संख्या: "+MNO(),"");
     p.push("1. प्रारंभिक अनुच्छेद — अधोहस्ताक्षरी की जाँच अधिकारी के रूप में नियुक्ति दिनांक ________ को हुई। सुनवाइयाँ दिनांक ________ को स्थान "+(c.sitPlace||"Bairia")+" में हुईं।");
     p.push("2. निरूपित आरोप:"); p.push(arts);
     p.push("3. आरोपों का कथन (अभिकथन):"); p.push(imps);
@@ -935,7 +947,7 @@ function buildIOReport(){
     p.push("","(हस्ताक्षर)","जाँच अधिकारी", io, "दिनांक: __________");
   } else {
     p.push("INQUIRY REPORT (Rule 14(23))","");
-    p.push("Case: "+who+"        Case No.: "+(c.auth.memoNo||"________"),"");
+    p.push("Case: "+who+"        Case No.: "+MNO(),"");
     p.push("1. Introductory paragraph — the undersigned was appointed Inquiring Authority on ________. The hearings were held at "+(c.sitPlace||"Bairia")+" on ________.");
     p.push("2. Articles of charge framed:"); p.push(arts);
     p.push("2A. The undersigned was appointed Inquiring Authority vide order "+(c.ioOrderNo||"________")+" dated "+(c.ioOrderDate? fmt(c.ioOrderDate):"________")+" of "+(c.ioOrderAuth||c.auth.desig||"________")+"; the Presenting Officer is "+(c.poName||"________")+".","");
@@ -1051,7 +1063,7 @@ function render(){
   $("pillLang").textContent = ST.lang==="hi"?"हिन्दी":"English";
   $("mnote").textContent = (m.id+" · "+m.track+" · "+(m.note?"Library note (not independently re-checked): "+m.note:""));
   const cw=competence(); $("cmpw").style.display=cw?"block":"none"; $("cmpw").textContent=cw;
-  renderArticles(); renderExtra(); renderChk();
+  syncMemo(); renderArticles(); renderExtra(); renderChk();
 }
 
 /* ================= article + case wiring ================= */
@@ -1134,6 +1146,7 @@ function pushCase(){
 }
 function pullArt(){
   const a=ART(); if(!a) return;
+  syncMemo();
   a.mid=val("mid"); a.from=val("pFrom"); a.to=val("pTo"); a.date=val("occDate"); a.amount=val("amount"); a.party=val("party"); a.ref=val("reference");
   a.aPosting=val("aPosting"); a.aDesig=val("aDesig");
   a.artHi=val("artHi"); a.artEn=val("artEn"); a.impHi=val("impHi"); a.impEn=val("impEn");
@@ -1862,7 +1875,7 @@ function buildOrderSheet(){
   const lang=ST.lang, nm=val("empName")||"________________", sal=salHI(), salE=salFullEN();
   const io=val("ioName")||"________________", po=val("poName")||"________________";
   const dt=fmt(val("sitDate")), pl=val("sitPlace")||"Bairia", cad=val("cadre"), off=val("posting")||"";
-  const caseNo=val("memoNo")||"________";
+  const caseNo=MNO();
   const p=[LH(),""];
   if(lang==="hi"){
     p.push("दैनिक आदेश-पत्र (DAILY ORDER SHEET)","");
