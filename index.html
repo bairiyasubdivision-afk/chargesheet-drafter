@@ -242,11 +242,14 @@ table.files th,table.files td{border-bottom:1px solid var(--bd);padding:5px 6px;
       <div><label>Posting for this article (optional)</label><input id="aPosting" placeholder="blank = the case posting"></div>
       <div><label>Designation for this article (optional)</label><input id="aDesig" placeholder="blank = the case designation"></div>
     </div>
-    <label>Article of charge — Hindi (editable)</label><textarea id="artHi"></textarea>
-    <label>Article of charge — English (editable)</label><textarea id="artEn"></textarea>
+    <div class="hint" id="minorNote" style="display:none">For a minor penalty the enclosure carries the <b>statement of imputation</b> alone — it is printed on the second page of the draft, under the heading “Statement of imputation of misconduct or misbehaviour”. A minor penalty has no articles of charge and no document or witness lists, so those boxes are not shown.</div>
+    <div id="fldArt">
+      <label>Article of charge — Hindi (editable)</label><textarea id="artHi"></textarea>
+      <label>Article of charge — English (editable)</label><textarea id="artEn"></textarea>
+    </div>
     <label>Statement of imputation — Hindi (editable)</label><textarea id="impHi"></textarea>
     <label>Statement of imputation — English (editable)</label><textarea id="impEn"></textarea>
-    <div class="row">
+    <div class="row" id="fldDW">
       <div><label>Documents for this article — one per line</label><textarea id="docList"></textarea></div>
       <div><label>Witnesses for this article — one per line</label><textarea id="witList"></textarea></div>
     </div>
@@ -319,6 +322,11 @@ table.files th,table.files td{border-bottom:1px solid var(--bd);padding:5px 6px;
     </div>
     <div class="btns">
       <button class="primary" id="btnGen">Generate charge sheet</button>
+      <button id="btnPrint">Print</button>
+      <button id="btnDocx">Download .docx</button>
+      <button class="ghost" id="btnCopy">Copy text</button>
+    </div>
+    <div class="btns" id="inqBtns">
       <button id="btnIO">Inquiring Authority / Inquiry Officer order</button>
       <button id="btnPO">Presenting Officer order</button>
       <button id="btnSummons">Summons to a witness</button>
@@ -326,10 +334,8 @@ table.files th,table.files td{border-bottom:1px solid var(--bd);padding:5px 6px;
       <button id="btnSheet">Daily order sheet</button>
       <button id="btnExparte">Ex parte order</button>
       <button id="btnDisagree">Disagreement note</button>
-      <button id="btnPrint">Print</button>
-      <button id="btnDocx">Download .docx</button>
-      <button class="ghost" id="btnCopy">Copy text</button>
     </div>
+    <div class="hint" id="inqNote" style="display:none">The buttons above are for a case in which an inquiry is held. A minor penalty without an inquiry needs only the memorandum and the statement of imputation, so they are hidden.</div>
     <div class="row3" id="extraRow" style="display:none">
       <div id="cell_xScheme"><label>Scheme / account type</label><input id="xScheme" placeholder="e.g. Savings Bank"></div>
       <div id="cell_xRecord"><label>Record / register</label><input id="xRecord" placeholder="e.g. the B.O. journal"></div>
@@ -1063,7 +1069,7 @@ function render(){
   $("pillLang").textContent = ST.lang==="hi"?"हिन्दी":"English";
   $("mnote").textContent = (m.id+" · "+m.track+" · "+(m.note?"Library note (not independently re-checked): "+m.note:""));
   const cw=competence(); $("cmpw").style.display=cw?"block":"none"; $("cmpw").textContent=cw;
-  syncMemo(); renderArticles(); renderExtra(); renderChk();
+  syncMemo(); trackUI(); renderArticles(); renderExtra(); renderChk();
 }
 
 /* ================= article + case wiring ================= */
@@ -1100,6 +1106,20 @@ function fillMis(){
 }
 /* the four extra placeholders are asked for only by the misconducts that use them */
 const EXTRA=[["xScheme","[scheme]"],["xRecord","[record]"],["xFacts","[facts]"],["xMedium","[medium]"]];
+/* What the chosen track actually uses.  A minor penalty without an inquiry (T1 for a GDS,
+   T4 for a departmental official) is a memorandum enclosing the statement of imputation
+   alone, so the article of charge, the document and witness lists, and the inquiry papers
+   have no place in it and are kept out of the way. */
+function trackUI(){
+  const minor = (ST.tpl==="T1"||ST.tpl==="T4");
+  const inquiry = !minor;
+  const g=$("btnGen"); if(g) g.textContent = minor? "Generate memorandum (minor penalty)" : "Generate charge sheet";
+  const ib=$("inqBtns");  if(ib) ib.style.display = inquiry? "" : "none";
+  const inote=$("inqNote"); if(inote) inote.style.display = inquiry? "none" : "block";
+  const fa=$("fldArt"); if(fa) fa.style.display = minor? "none" : "";
+  const fd=$("fldDW");  if(fd) fd.style.display = minor? "none" : "";
+  const mn=$("minorNote"); if(mn) mn.style.display = minor? "block" : "none";
+}
 function renderExtra(){
   const a=ART(); if(!a) return; const txt=[a.artEn,a.impEn,a.artHi,a.impHi].join(" ");
   let any=false;
