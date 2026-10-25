@@ -223,7 +223,8 @@ table.files th,table.files td{border-bottom:1px solid var(--bd);padding:5px 6px;
       <div><label>Penalty track</label><div class="chips" id="trackChips">
         <div class="chip sm" data-tr="minor">Minor / लघु</div><div class="chip sm" data-tr="major">Major / दीर्घ</div>
         <div class="hint" id="trackNote" style="margin:5px 0 0"></div></div></div>
-      <div><label>Inquiry to be held? (minor only)</label><div class="chips" id="inqChips">
+      <div><label>Inquiry to be held?</label>
+        <div class="hint" style="margin:2px 0 4px">A minor penalty may be imposed with or without an inquiry. A major penalty always has one.</div><div class="chips" id="inqChips">
         <div class="chip sm on" data-inq="no">No inquiry</div><div class="chip sm" data-inq="yes">Hold inquiry</div></div></div>
     </div>
     <label>Governing provisions (as they appear in the article)</label>
@@ -728,6 +729,16 @@ function memoEN(tpl, m, c){
    "4. The receipt of this Memorandum should be acknowledged by "+sal+" "+nm+".",
    "", "(By order)", "", "Signature", ad + (a!=="________________"? "  ("+a+")":""), "", "To", who
   ].join("\n");
+  if(tpl==="T6") return [
+   "MEMORANDUM",
+   "In continuation of Memorandum No. "+MNO()+" dated "+fmt(val("issueDate"))+", issued under Rule 16 of the Central Civil Services (Classification, Control and Appeal) Rules, 1965, the undersigned is of the opinion that it is necessary to hold an inquiry against "+sal+" "+nm+" under clause (b) of sub-rule (1) of the said Rule 16. The substance of the imputation of misconduct or misbehaviour in respect of which the inquiry is proposed to be held is set out in the enclosed statement of articles of charge (Annexure-I). A statement of the imputation of misconduct or misbehaviour in support of each article of charge is enclosed (Annexure-II). A list of documents by which, and a list of witnesses by whom, the articles of charge are proposed to be sustained are also enclosed (Annexures-III and IV).",
+   "2. "+sal+" "+nm+" is directed to submit within "+wsd+" days of the receipt of this Memorandum a written statement of "+G("his")+" defence and also to state whether "+G("he")+" desires to be heard in person.",
+   "3. "+G("He")+" is informed that an inquiry will be held only in respect of those articles of charge as are not admitted. "+G("He")+" should, therefore, specifically admit or deny each article of charge.",
+   "4. "+sal+" "+nm+" is further informed that if "+G("he")+" does not submit "+G("his")+" written statement of defence on or before the date specified in para 2 above, or does not appear in person before the Inquiring Authority or otherwise fails or refuses to comply with the provisions of Rules 14 and 16 of the Central Civil Services (Classification, Control and Appeal) Rules, 1965, or the orders or directions issued in pursuance of the said Rules, the Inquiring Authority may hold the inquiry against "+G("him")+" ex parte.",
+   "5. Attention of "+sal+" "+nm+" is invited to Rule 20 of the Central Civil Services (Conduct) Rules, 1964, under which no Government servant shall bring or attempt to bring any political or outside influence to bear upon any superior authority to further "+G("his")+" interest in respect of matters pertaining to "+G("his")+" service under the Government. If any representation is received on "+G("his")+" behalf from another person in respect of any matter dealt with in these proceedings, it will be presumed that "+sal+" "+nm+" is aware of such a representation and that it has been made at "+G("his")+" instance and action will be taken against "+G("him")+" for violation of Rule 20 of the Central Civil Services (Conduct) Rules, 1964.",
+   "6. The receipt of this Memorandum may be acknowledged.",
+   "", "(By order)", "", "Signature", ad + (a!=="________________"? "  ("+a+")":""), "", "To", who
+  ].join("\n");
   // T5
   return [
    "MEMORANDUM",
@@ -779,6 +790,16 @@ function memoHI(tpl, m, c){
    "2. "+sal+" "+nm+" को इस प्रस्ताव के विरुद्ध जो भी प्रतिवेदन देना चाहें, देने का अवसर दिया जाता है।",
    "3. यदि "+sal+" "+nm+" इस ज्ञापन की प्राप्ति से "+wsd+" दिनों के भीतर अपना प्रतिवेदन प्रस्तुत नहीं करते हैं, तो यह मान लिया जाएगा कि उनका कोई प्रतिवेदन नहीं है तथा उनके विरुद्ध एकपक्षीय (ex parte) आदेश पारित किया जा सकता है।",
    "4. इस ज्ञापन की प्राप्ति की पुष्टि "+sal+" "+nm+" द्वारा की जाए।",
+   "", "(आदेश से)", "", "हस्ताक्षर", ad + (a!=="________________"? "  ("+a+")":""), "", "प्रति,", who
+  ].join("\n");
+  if(tpl==="T6") return [
+   "ज्ञापन",
+   "केंद्रीय सिविल सेवा (वर्गीकरण, नियंत्रण एवं अपील) नियमावली, 1965 के नियम 16 के अंतर्गत जारी ज्ञापन संख्या "+MNO()+" दिनांक "+fmt(val("issueDate"))+" के क्रम में, अधोहस्ताक्षरी का मत है कि उक्त नियम के उप-नियम (1) के खंड (ख) के अंतर्गत "+sal+" "+nm+" के विरुद्ध जाँच कराना आवश्यक है। जिस अनुचित आचरण अथवा दुर्व्यवहार के संबंध में जाँच प्रस्तावित है, उसका सार संलग्न आरोपों के विवरण (अनुलग्नक-I) में दिया गया है। प्रत्येक आरोप के समर्थन में अनुचित आचरण अथवा दुर्व्यवहार का विवरण-पत्र (अनुलग्नक-II) संलग्न है। जिन अभिलेखों द्वारा तथा जिन गवाहों द्वारा आरोपों को सिद्ध किया जाना प्रस्तावित है, उनकी सूचियाँ भी संलग्न हैं (अनुलग्नक-III एवं IV)।",
+   "2. "+sal+" "+nm+" को निर्देश दिया जाता है कि इस ज्ञापन की प्राप्ति से "+wsd+" दिनों के भीतर अपना लिखित बचाव-बयान प्रस्तुत करें तथा यह भी बताएं कि वे व्यक्तिगत रूप से सुने जाना चाहते हैं अथवा नहीं।",
+   "3. उन्हें सूचित किया जाता है कि जाँच केवल उन्हीं आरोपों के संबंध में की जाएगी जिन्हें स्वीकार नहीं किया गया है। अतः वे प्रत्येक आरोप को स्पष्ट रूप से स्वीकार अथवा नकारें।",
+   "4. "+sal+" "+nm+" को यह भी सूचित किया जाता है कि यदि वे ऊपर पैरा 2 में निर्दिष्ट तिथि तक अपना लिखित बचाव-बयान प्रस्तुत नहीं करते, अथवा जाँच अधिकारी के समक्ष व्यक्तिगत रूप से उपस्थित नहीं होते, अथवा अन्यथा नियम 14 तथा नियम 16 के प्रावधानों या उनके अधीन जारी आदेशों/निदेशों का पालन करने में असफल रहते हैं या इनकार करते हैं, तो जाँच अधिकारी उनके विरुद्ध एकपक्षीय (ex parte) जाँच कर सकता है।",
+   "5. "+sal+" "+nm+" का ध्यान केंद्रीय सिविल सेवा (आचरण) नियमावली, 1964 के नियम 20 की ओर आकर्षित किया जाता है, जिसके अनुसार कोई भी सरकारी सेवक सरकार के अधीन अपनी सेवा से संबंधित विषयों में अपने हित साधन हेतु किसी वरिष्ठ प्राधिकारी पर कोई राजनीतिक अथवा अन्य बाहरी प्रभाव नहीं डालेगा और न डालने का प्रयास करेगा। यदि इन कार्यवाहियों में विचारित किसी विषय में उनकी ओर से किसी अन्य व्यक्ति द्वारा कोई प्रतिवेदन प्राप्त होता है, तो यह मान लिया जाएगा कि उन्हें इसकी जानकारी है तथा वह उनके निर्देश पर किया गया है, और नियम 20 का उल्लंघन करने के लिए उनके विरुद्ध कार्रवाई की जाएगी।",
+   "6. इस ज्ञापन की प्राप्ति की पुष्टि की जा सकती है।",
    "", "(आदेश से)", "", "हस्ताक्षर", ad + (a!=="________________"? "  ("+a+")":""), "", "प्रति,", who
   ].join("\n");
   return [
@@ -1065,7 +1086,8 @@ function applyRole(){
 function render(){
   const m=rec();
   $("pillTpl").textContent = ST.tpl + " — " + ({T1:"GDS minor, Rule 10-A (no inquiry)",T2:"GDS minor with inquiry, Rule 10-A / 10-E",
-    T3:"GDS major, Rule 10-B",T4:"Departmental minor, Rule 16",T5:"Departmental major, Rule 14"}[ST.tpl]||"");
+    T3:"GDS major, Rule 10-B",T4:"Departmental minor, Rule 16 (no inquiry)",T5:"Departmental major, Rule 14",
+    T6:"Departmental minor with inquiry, Rule 16(1)(b)"}[ST.tpl]||"");
   $("pillLang").textContent = ST.lang==="hi"?"हिन्दी":"English";
   $("mnote").textContent = (m.id+" · "+m.track+" · "+(m.note?"Library note (not independently re-checked): "+m.note:""));
   const cw=competence(); $("cmpw").style.display=cw?"block":"none"; $("cmpw").textContent=cw;
@@ -1212,7 +1234,7 @@ function applyMis(keep){
   })();
   $("inqChips").style.opacity=(ST.track==="major")?".45":"1";
   document.querySelectorAll("#inqChips .chip").forEach(c=>c.classList.toggle("on",c.dataset.inq===(ST.inquiry?"yes":"no")));
-  ST.tpl=(ST.pop==="GDS")?(ST.track==="minor"?(ST.inquiry?"T2":"T1"):"T3"):(ST.track==="minor"?"T4":"T5");
+  ST.tpl=(ST.pop==="GDS")?(ST.track==="minor"?(ST.inquiry?"T2":"T1"):"T3"):(ST.track==="minor"?(ST.inquiry?"T6":"T4"):"T5");
   $("prov").value=m.prov;
   if(!keep){ const a=ART(); if(a){ a.artHi=m.ahi; a.artEn=m.aen; a.impHi=m.ihi; a.impEn=m.ien; a.prov=m.prov;
     $("artHi").value=a.artHi; $("artEn").value=a.artEn; $("impHi").value=a.impHi; $("impEn").value=a.impEn; } }
